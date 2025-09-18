@@ -1,0 +1,13 @@
+{
+  "name": "sso-backend",
+  "version": "1.0.0",
+  "description": "Backend for SSO with Microsoft",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@azure/msal-node": "^2.6.2",
+    "express": "^4.18.2"
+  }
+}
