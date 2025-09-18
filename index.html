@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abikassen Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <style>
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        .switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e5e7eb;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+    <div id="loginView" class="container mx-auto px-4 py-8 flex flex-col items-center">
+        <div class="bg-white rounded-xl shadow-md p-8 max-w-md w-full text-center">
+            <h1 class="text-3xl font-bold text-gray-800 mb-6">Abikassen Tracker</h1>
+            <p class="text-gray-600 mb-8">Melde dich mit deinem Schulaccount an, um deine Beiträge zu sehen.</p>
+            
+            <button id="loginButton" class="w-full bg-[#6264A7] text-white py-3 px-4 rounded-md hover:bg-[#464775] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6264A7] flex items-center justify-center">
+                <i data-feather="microsoft" class="mr-2"></i>
+                Mit Microsoft Teams anmelden
+            </button>
+        </div>
+    </div>
+
+    <div id="appView" class="container mx-auto px-4 py-8 flex flex-col items-center hidden">
+        <div class="flex justify-between w-full max-w-2xl mb-4">
+            <h1 class="text-3xl font-bold text-gray-800 text-center">Abikassen Tracker</h1>
+            <a href="admin.html" class="flex items-center text-emerald-600 hover:text-emerald-800">
+                <i data-feather="lock" class="mr-1"></i>
+                Admin
+            </a>
+        </div>
+
+        <!-- Admin notice -->
+        <div id="adminNotice" class="hidden bg-emerald-100 border-l-4 border-emerald-500 text-emerald-700 p-4 mb-6 w-full max-w-2xl">
+            <div class="flex items-center">
+                <i data-feather="alert-circle" class="mr-2"></i>
+                <p>Sie sind als Admin eingeloggt. <a href="admin.html" class="font-semibold hover:underline">Zum Admin-Bereich</a></p>
+            </div>
+        </div>
+
+        <!-- Personal View -->
+        <div id="personalView" class="space-y-8">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-center gap-4 mb-4">
+                    <h2 class="text-xl font-semibold text-gray-700 text-center">Dein Beitrag</h2>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-500">Persönlich</span>
+                        <label class="switch">
+                            <input type="checkbox" id="viewToggle">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="text-sm text-gray-500">Alle</span>
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <div class="relative w-56 h-56">
+                        <canvas id="personalChart"></canvas>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-2xl font-bold text-gray-700 transition-opacity duration-1000 ease-in-out">210€/300€</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-center space-x-6 mt-4">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-emerald-500 rounded-full mr-2"></div>
+                        <span class="text-gray-700">Bezahlt</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-emerald-100 rounded-full mr-2"></div>
+                        <span class="text-gray-700">Verbleibend</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-md p-4 w-full max-w-md transition-opacity duration-300 ease-in-out" style="opacity: 0">
+                <h2 class="text-md font-semibold mb-3 text-gray-700">Deine Transaktionen</h2>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <div class="text-sm text-gray-500">15.03.2023</div>
+                        <div class="font-medium text-emerald-600">€50</div>
+                        <div class="text-sm text-gray-500 truncate max-w-[120px]">Erste Zahlung</div>
+                    </div>
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <div class="text-sm text-gray-500">02.04.2023</div>
+                        <div class="font-medium text-emerald-600">€80</div>
+                        <div class="text-sm text-gray-500 truncate max-w-[120px]">Zweite Zahlung</div>
+                    </div>
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <div class="text-sm text-gray-500">21.04.2023</div>
+                        <div class="font-medium text-emerald-600">€80</div>
+                        <div class="text-sm text-gray-500 truncate max-w-[120px]">Dritte Zahlung</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Group View -->
+        <div id="groupView" class="space-y-8 hidden" style="opacity: 0">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-center gap-4 mb-4">
+                    <h2 class="text-xl font-semibold text-gray-700">Klassenbeiträge</h2>
+                    <div class="flex items-center gap-2">
+                        <span class="text-sm text-gray-500">Persönlich</span>
+                        <label class="switch">
+                            <input type="checkbox" id="viewToggleGroup">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="text-sm text-gray-500">Alle</span>
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <div class="relative w-72 h-72">
+                        <canvas id="groupChart"></canvas>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <span class="text-3xl font-bold text-gray-700 transition-opacity duration-1000 ease-in-out">4.200€/9.000€</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-center space-x-6 mt-4">
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-emerald-500 rounded-full mr-2"></div>
+                        <span class="text-gray-700">Bezahlt</span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-4 h-4 bg-emerald-100 rounded-full mr-2"></div>
+                        <span class="text-gray-700">Verbleibend</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        feather.replace();
+        
+        // Check if user is logged in (in a real app, this would verify with your backend)
+        // For demo, we'll use localStorage
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        
+        if(isLoggedIn) {
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('appView').classList.remove('hidden');
+            
+            // Check if admin
+            const urlParams = new URLSearchParams(window.location.search);
+            const isAdmin = urlParams.has('admin');
+            if(isAdmin) {
+                document.getElementById('adminNotice').classList.remove('hidden');
+            }
+        }
+
+        // Login button handler
+        document.getElementById('loginButton').addEventListener('click', function() {
+            // In a real app, this would redirect to Microsoft Teams SSO
+            // For demo, we'll simulate login
+            localStorage.setItem('isLoggedIn', 'true');
+            document.getElementById('loginView').classList.add('hidden');
+            document.getElementById('appView').classList.remove('hidden');
+        });
+        
+        // Animation for text switching
+        function animateText(element, texts, interval = 2000) {
+            let current = 0;
+            element.style.opacity = 0;
+            setTimeout(() => {
+                element.textContent = texts[current];
+                element.style.opacity = 1;
+            }, 100);
+            
+            setInterval(() => {
+                element.style.opacity = 0;
+                setTimeout(() => {
+                    current = (current + 1) % texts.length;
+                    element.textContent = texts[current];
+                    element.style.opacity = 1;
+                }, 800);
+            }, interval + 800); // Slightly faster transition
+        }
+
+        // Personal Chart
+        const personalCtx = document.getElementById('personalChart').getContext('2d');
+        const personalChart = new Chart(personalCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Paid', 'Remaining'],
+                datasets: [{
+                    data: [210, 90],
+                    backgroundColor: [
+                        '#10b981',
+                        '#d1fae5'
+                    ],
+                    borderWidth: 0,
+                    borderRadius: 10,
+                    spacing: 2
+                }]
+            },
+            options: {
+                cutout: '75%',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Group Chart
+        const groupCtx = document.getElementById('groupChart').getContext('2d');
+        const groupChart = new Chart(groupCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Collected', 'Remaining'],
+                datasets: [{
+                    data: [4200, 4800],
+                    backgroundColor: [
+                        '#10b981',
+                        '#d1fae5'
+                    ],
+                    borderWidth: 0,
+                    borderRadius: 10,
+                    spacing: 2
+                }]
+            },
+            options: {
+                cutout: '75%',
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        // Only initialize charts if logged in
+        if(isLoggedIn) {
+            // Initialize text animations
+            const personalText = document.querySelector('#personalView .absolute span:first-child');
+            const groupText = document.querySelector('#groupView .absolute span:first-child');
+            
+            animateText(personalText, ['210€/300€', '70%'], 3000);
+            animateText(groupText, ['4.200€/9.000€', '47%'], 3000);
+
+            // Initialize charts
+            const personalCtx = document.getElementById('personalChart').getContext('2d');
+            const personalChart = new Chart(personalCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Paid', 'Remaining'],
+                    datasets: [{
+                        data: [210, 90],
+                        backgroundColor: [
+                            '#10b981',
+                            '#d1fae5'
+                        ],
+                        borderWidth: 0,
+                        borderRadius: 10,
+                        spacing: 2
+                    }]
+                },
+                options: {
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Group Chart
+            const groupCtx = document.getElementById('groupChart').getContext('2d');
+            const groupChart = new Chart(groupCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Collected', 'Remaining'],
+                    datasets: [{
+                        data: [4200, 4800],
+                        backgroundColor: [
+                            '#10b981',
+                            '#d1fae5'
+                        ],
+                        borderWidth: 0,
+                        borderRadius: 10,
+                        spacing: 2
+                    }]
+                },
+                options: {
+                    cutout: '75%',
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Toggle between views
+        const togglePersonal = document.getElementById('viewToggle');
+        const toggleGroup = document.getElementById('viewToggleGroup');
+        const personalView = document.getElementById('personalView');
+        const groupView = document.getElementById('groupView');
+
+        function toggleViews(showGroup) {
+            if (showGroup) {
+                personalView.style.opacity = 0;
+                document.querySelector('#personalView .bg-white:last-child').style.opacity = 0;
+                setTimeout(() => {
+                    personalView.classList.add('hidden');
+                    groupView.classList.remove('hidden');
+                    setTimeout(() => {
+                        groupView.style.opacity = 1;
+                        toggleGroup.checked = true;
+                    }, 50);
+                }, 300);
+            } else {
+                groupView.style.opacity = 0;
+                setTimeout(() => {
+                    groupView.classList.add('hidden');
+                    personalView.classList.remove('hidden');
+                    setTimeout(() => {
+                        personalView.style.opacity = 1;
+                        document.querySelector('#personalView .bg-white:last-child').style.opacity = 1;
+                        togglePersonal.checked = false;
+                    }, 50);
+                }, 300);
+            }
+        }
+
+        // Initialize transactions opacity
+        document.querySelector('#personalView .bg-white:last-child').style.opacity = 1;
+
+        togglePersonal.addEventListener('change', function() {
+            toggleViews(this.checked);
+        });
+
+        toggleGroup.addEventListener('change', function() {
+            toggleViews(this.checked);
+        });
+
+            // Sync toggle states
+            toggleGroup.checked = false;
+            togglePersonal.checked = false;
+
+            // Initial styles
+            personalView.style.transition = 'opacity 0.5s ease';
+            groupView.style.transition = 'opacity 0.5s ease';
+            document.querySelector('#personalView .bg-white:last-child').style.transition = 'opacity 0.5s ease';
+        }
+    </script>
+</body>
+</html>
