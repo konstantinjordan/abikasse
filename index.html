@@ -190,11 +190,9 @@
 
         // Login button handler
         document.getElementById('loginButton').addEventListener('click', function() {
-            // In a real app, this would redirect to Microsoft Teams SSO
-            // For demo, we'll simulate login
-            localStorage.setItem('isLoggedIn', 'true');
-            document.getElementById('loginView').classList.add('hidden');
-            document.getElementById('appView').classList.remove('hidden');
+    // Leite den Benutzer zur Login-Route auf deinem Vercel-Backend weiter
+    window.location.href = 'https://abikasse.vercel.app/api/login';
+});
         });
         
         // Animation for text switching
